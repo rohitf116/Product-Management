@@ -2,14 +2,16 @@ const userModel = require('../model/userModel');
 const aws = require('aws-sdk');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const validation = require('../validations/validations');
+const  {
+  regexName,
+  regexEmail,
+  regexPassword,
+  regexNumber,
+  regexPinCode,
+  isValid,
+  isValidObjectId
 
-const mongoose = require('mongoose');
-const isValid = value => {
-  if (typeof value === 'undefined' || value === null) return false;
-  if (typeof value === 'string' && value.trim().length === 0) return false;
-  return true;
-};
+} = require('../validations/validations');
 
 aws.config.update({
   accessKeyId: 'AKIAY3L35MCRVFM24Q7U',
@@ -39,21 +41,11 @@ const uploadFile = async function(file) {
   });
 };
 
-const regexName = /^[a-z ,.'-]+$/i;
-const regexPassword = /^([a-zA-Z0-9@$!%*#?&]{8,15})$/;
 
-const regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-const regexNumber = /^([9876]{1})(\d{1})(\d{8})$/;
-const regexPinCode = /^[1-9][0-9]{5}$}*$/;
-
-const isValidObjectId = function(objectId) {
-  return mongoose.Types.ObjectId.isValid(objectId); // returns a boolean
-};
 
 exports.register = async function(req, res) {
   try {
     let { fname, lname, password, email, phone, address } = req.body;
-    console.log(address);
     if (!Object.keys(req.body).length)
       return res
         .status(400)
@@ -190,7 +182,7 @@ exports.register = async function(req, res) {
 
 exports.getProfile = async function(req, res) {
   try {
-    let userId = req.params.userId;
+    let {userId} = req.params;
 
     // if userId is not a valid ObjectId
     if (!isValidObjectId(userId)) {
@@ -399,7 +391,7 @@ exports.updatedUser = async function(req, res) {
           savedObj['address.shipping.city'] = city;
         }
         if (pincode) {
-          if (!/^[0-9]{6}$/.test(pincode))
+          if (!regexPinCode.test(pincode))
             return res.status(400).send({
               status: false,
               message: 'Shipping pincode must be number min length 6'
@@ -426,7 +418,7 @@ exports.updatedUser = async function(req, res) {
           savedObj['address.billing.city'] = city;
         }
         if (pincode) {
-          if (!/^[0-9]{6}$/.test(pincode))
+          if (!regexPinCode.test(pincode))
             return res.status(400).send({
               status: false,
               message: 'Billing pincode must be number min length 6'

@@ -107,10 +107,10 @@ exports.createCart = async (req, res) => {
 // **********************Update Api********************
 exports.updateCart = async function (req, res) {
   try {
-      let userId = req.params.userId
-      let data = req.body
+      const {userId} = req.params
+      const data = req.body
 
-      let { cartId, productId, removeProduct, ...rest } = data
+      const { cartId, productId, removeProduct } = data
 
       if (Object.keys(data).length < 0) return res.status(400).send({ status: false, message: "Please enter only valid keys" });
 
@@ -173,14 +173,13 @@ exports.updateCart = async function (req, res) {
 exports.getCart = async (req, res) => {
   try {
     const { userId } = req.params;
-    // if userId is not a valid ObjectId
+
     if (!isValidObjectId(userId)) {
       return res
         .status(400)
         .send({ status: false, message: 'userId is invalid' });
     }
 
-    // if user does not exist
     const userDoc = await userModel.findById(userId);
     if (!userDoc) {
       return res
@@ -188,7 +187,6 @@ exports.getCart = async (req, res) => {
         .send({ status: false, message: 'user does not exist' });
     }
 
-    //checking if the cart exist with this userId or not
     const findCart = await cartModel
       .findOne({ userId, isDeleted: false })
       .populate('items.productId');

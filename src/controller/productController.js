@@ -3,9 +3,10 @@ const aws = require('aws-sdk');
 const mongoose = require('mongoose');
 
 const {
-
   titleRegex,
-  priceRegex
+  priceRegex,
+  isValid,
+  isValidFile
 } = require('../validations/validations');
 aws.config.update({
   accessKeyId: 'AKIAY3L35MCRVFM24Q7U',
@@ -36,17 +37,6 @@ const uploadFile = async function(file) {
     // if( data) return data.Location
     // else return "there is an error"
   });
-};
-
-const isValid = value => {
-  if (typeof value === 'undefined' || value === null) return false;
-  if (typeof value === 'string' && value.trim().length === 0) return false;
-  if (value.length == 0) return false;
-  return true;
-};
-
-const isValidFile = pw => {
-  if (/(\/*\.(?:png|gif|webp|jpeg|jpg))/.test(pw)) return true;
 };
 
 exports.createProduct = async function(req, res) {
@@ -149,8 +139,6 @@ exports.createProduct = async function(req, res) {
           .send({ status: false, msg: 'style must be a valid character' });
     }
     if (availableSizes) {
-      // const allowedSize = ["S", "XS", "M", "X", "L", "XXL", "XL"];
-      // const allSize = { S: 1, XS: 1, M: 1, X: 1, L: 2, XXL: 1, XL: 1 };
 
       availableSizes = availableSizes.split(',');
       if (!isValid(availableSizes))
@@ -308,8 +296,8 @@ exports.getProductById = async function(req, res) {
 //newUpdate
 exports.newUpdate = async function(req, res) {
   try {
-    let { productId } = req.params;
-    let {
+    const { productId } = req.params;
+    const {
       title,
       description,
       price,
@@ -469,7 +457,7 @@ exports.newUpdate = async function(req, res) {
 //delete
 exports.deleteProduct = async function(req, res) {
   try {
-    let { productId } = req.params;
+    const { productId } = req.params;
 
     if (!productId)
       return res
