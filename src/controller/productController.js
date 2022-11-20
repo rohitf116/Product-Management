@@ -1,7 +1,8 @@
 const productModel = require('../model/productModel');
 const aws = require('aws-sdk');
 const mongoose = require('mongoose');
-
+const dotevn = require('dotenv');
+dotevn.config();
 const {
   titleRegex,
   priceRegex,
@@ -9,8 +10,8 @@ const {
   isValidFile
 } = require('../validations/validations');
 aws.config.update({
-  accessKeyId: 'AKIAY3L35MCRVFM24Q7U',
-  secretAccessKey: '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',
+  accessKeyId: process.env.accessKeyId,
+  secretAccessKey: process.env.secretAccessKey,
   region: 'ap-south-1'
 });
 
@@ -20,8 +21,8 @@ const uploadFile = async function(file) {
     const s3 = new aws.S3({ apiVersion: '2006-03-01' }); // we will be using the s3 service of aws
 
     const uploadParams = {
-      ACL: 'public-read',
-      Bucket: 'classroom-training-bucket', //HERE
+      Bucket: 'my-product-management-project', //HERE
+      ContentType: 'jpeg',
       Key: `productManagement5grp38/${file.originalname}`, //HERE
       Body: file.buffer
     };
@@ -139,7 +140,6 @@ exports.createProduct = async function(req, res) {
           .send({ status: false, msg: 'style must be a valid character' });
     }
     if (availableSizes) {
-
       availableSizes = availableSizes.split(',');
       if (!isValid(availableSizes))
         return res
@@ -191,6 +191,7 @@ exports.createProduct = async function(req, res) {
       .status(201)
       .send({ status: true, message: 'Product Created', data: productCreated });
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       status: false,
       message: 'Server Error',
@@ -264,7 +265,7 @@ exports.getProduct = async (req, res) => {
 //get by id
 exports.getProductById = async function(req, res) {
   try {
-    let {productId} = req.params;
+    let { productId } = req.params;
     if (!isValid(productId.trim())) {
       return res
         .status(400)
@@ -312,9 +313,10 @@ exports.newUpdate = async function(req, res) {
       return res
         .status(400)
         .send({ status: false, message: 'productId is invalid' });
-    if(!Object.keys(req.body).length)return res
-    .status(400)
-    .send({ status: false, message: 'Please give some value to chagne' });
+    if (!Object.keys(req.body).length)
+      return res
+        .status(400)
+        .send({ status: false, message: 'Please give some value to chagne' });
     if (title) {
       if (!isValid(title))
         return res

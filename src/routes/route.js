@@ -25,11 +25,11 @@ const router = express.Router();
 
 router.post('/register', register);
 
-router.get('/user/:userId/profile',authentication,authorization, getProfile);
+router.get('/user/:userId/profile', authentication, authorization, getProfile);
 
 router.post('/login', userLogin);
 
-router.put('/user/:userId/profile',authentication,authorization, updatedUser);
+router.put('/user/:userId/profile', authentication, authorization, updatedUser);
 
 router.post('/products', createProduct);
 
@@ -41,16 +41,21 @@ router.put('/products/:productId', newUpdate);
 
 router.delete('/products/:productId', deleteProduct);
 
-router.post('/users/:userId/cart',authentication,authorization,createCart);
+router.post('/users/:userId/cart', authentication, authorization, createCart);
 
-router.put('/users/:userId/cart',authentication,authorization,updateCart);
+router.put('/users/:userId/cart', authentication, authorization, updateCart);
 
-router.get('/users/:userId/cart',authentication,authorization,getCart);
+router.get('/users/:userId/cart', authentication, authorization, getCart);
 
-router.delete('/users/:userId/cart',authentication,authorization, deleteCart);
+router.delete('/users/:userId/cart', authentication, authorization, deleteCart);
 
-router.post('/users/:userId/orders',authentication,authorization, createOrder);
+router.post(
+  '/users/:userId/orders',
+  authentication,
+  authorization,
+  createOrder
+);
 
-router.put('/users/:userId/orders',authentication,authorization, updateOrder);
+router.put('/users/:userId/orders', authentication, authorization, updateOrder);
 
 module.exports = router;
