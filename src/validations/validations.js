@@ -17,11 +17,7 @@ const isValidObjectId = function(objectId) {
   return mongoose.Types.ObjectId.isValid(objectId); // returns a boolean
 };
 
-
-const titleRegex = /^\w+$/;
 const priceRegex = /^\d*[0-9](|.\d*[0-9]|,\d*[0-9])?$/;
-
-
 
 const isValidFile = pw => {
   if (/(\/*\.(?:png|gif|webp|jpeg|jpg))/.test(pw)) return true;
@@ -34,7 +30,6 @@ module.exports = {
   regexNumber,
   regexPinCode,
   isValid,
-  titleRegex,
   priceRegex,
   isValidObjectId,
   isValidFile

@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const dotevn = require('dotenv');
 dotevn.config();
 const {
-  titleRegex,
   priceRegex,
   isValid,
   isValidFile
@@ -65,10 +64,6 @@ exports.createProduct = async function(req, res) {
       return res
         .status(400)
         .send({ status: false, msg: 'title cannot be empty' });
-    if (!titleRegex.test(title))
-      return res
-        .status(400)
-        .send({ status: false, msg: 'title must be valid character' });
     const alreadytitle = await productModel.findOne({ title });
     if (alreadytitle)
       return res
@@ -134,10 +129,6 @@ exports.createProduct = async function(req, res) {
         return res
           .status(400)
           .send({ status: false, msg: 'style cannot be empty' });
-      if (!titleRegex.test(style))
-        return res
-          .status(400)
-          .send({ status: false, msg: 'style must be a valid character' });
     }
     if (availableSizes) {
       availableSizes = availableSizes.split(',');
@@ -322,10 +313,6 @@ exports.newUpdate = async function(req, res) {
         return res
           .status(400)
           .send({ status: false, message: 'title cannot be empty' });
-      if (!titleRegex.test(title))
-        return res
-          .status(400)
-          .send({ status: false, message: 'title contains invalid chaarc' });
       const alreadytitle = await productModel.findOne({ title });
       if (alreadytitle)
         return res

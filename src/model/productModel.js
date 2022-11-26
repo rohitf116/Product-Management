@@ -11,6 +11,9 @@ const productSchema = new mongoose.Schema(
     productImage: { type: String, required: true }, // s3 link
     style: { type: String },
     availableSizes: { type: [String], required: true },
+    countInStock: { type: Number, default: 100 },
+    rating: { type: Number, default: 0 },
+    numReviews: { type: Number, default: 0 },
     installments: { type: Number },
     deletedAt: { type: Date, default: null },
     isDeleted: { type: Boolean, default: false }

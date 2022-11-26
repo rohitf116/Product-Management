@@ -1,8 +1,10 @@
 const userModel = require('../model/userModel');
 const aws = require('aws-sdk');
+const dotevn = require('dotenv');
+dotevn.config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const  {
+const {
   regexName,
   regexEmail,
   regexPassword,
@@ -10,12 +12,11 @@ const  {
   regexPinCode,
   isValid,
   isValidObjectId
-
 } = require('../validations/validations');
 
 aws.config.update({
-  accessKeyId: 'AKIAY3L35MCRVFM24Q7U',
-  secretAccessKey: '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',
+  accessKeyId: process.env.accessKeyId,
+  secretAccessKey: process.env.secretAccessKey,
   region: 'ap-south-1'
 });
 
@@ -26,8 +27,8 @@ const uploadFile = async function(file) {
 
     const uploadParams = {
       ACL: 'public-read',
-      Bucket: 'classroom-training-bucket', //HERE
-      Key: `productManagement5grp38/${file.originalname}`, //HERE
+      Bucket: 'my-product-management-project', //HERE
+      Key: `ecommerce-user/${file.originalname}`, //HERE
       Body: file.buffer
     };
 
@@ -37,15 +38,14 @@ const uploadFile = async function(file) {
       }
       return resolve(data.Location);
     });
-
   });
 };
-
-
 
 exports.register = async function(req, res) {
   try {
     let { fname, lname, password, email, phone, address } = req.body;
+    address = JSON.parse(address);
+
     if (!Object.keys(req.body).length)
       return res
         .status(400)
@@ -54,19 +54,19 @@ exports.register = async function(req, res) {
     if (!files?.length) {
       return res
         .status(400)
-        .send({ status: false, msg: 'profileimage  is missing' });
+        .send({ status: false, message: 'profileimage  is missing' });
     }
     if (files[0].fieldname != 'profileImage')
       // upload only png and jpg format
-      return res
-        .status(400)
-        .send({ status: false, msg: 'Only images allowed as profileImage' });
+      return res.status(400).send({
+        status: false,
+        message: 'Only images allowed as profileImage'
+      });
     if (!files[0].originalname.match(/\.(png|jpg|jpeg|webp|gif)$/))
       // upload only png and jpg format
       return res
         .status(400)
-        .send({ status: false, msg: 'Only images allowed' });
-
+        .send({ status: false, message: 'Only images allowed' });
     //upload to s3 and get the uploaded link
     // res.send the link back to frontend/postman
     const uploadedFileURL = await uploadFile(files[0]);
@@ -122,33 +122,33 @@ exports.register = async function(req, res) {
         .status(400)
         .send({ status: false, message: 'This phone is already being used' });
     // address=JSON.parse(address)
-    if (!isValid(address.shipping.street))
+    if (!isValid(address?.shipping?.street))
       return res
         .status(400)
         .send({ status: false, message: 'street of shipping cannot be empty' });
-    if (!isValid(address.shipping.city))
+    if (!isValid(address?.shipping?.city))
       return res
         .status(400)
         .send({ status: false, message: 'city of shipping cannot be empty' });
-    if (!isValid(address.shipping.pincode))
+    if (!isValid(address?.shipping?.pincode))
       return res.status(400).send({
         status: false,
         message: 'pincode of shipping  cannot be empty'
       });
-    if (!regexPinCode.test(address.shipping.pincode))
+    if (!regexPinCode.test(address?.shipping?.pincode))
       return res.status(400).send({
         status: false,
         message: 'please use valid pincode of shipping'
       });
-    if (!isValid(address.billing.street))
+    if (!isValid(address?.billing?.street))
       return res
         .status(400)
         .send({ status: false, message: 'street of billing cannot be empty' });
-    if (!isValid(address.billing.city))
+    if (!isValid(address?.billing?.city))
       return res
         .status(400)
         .send({ status: false, message: 'city of billing cannot be empty' });
-    if (!isValid(address.billing.pincode))
+    if (!isValid(address?.billing?.pincode))
       return res
         .status(400)
         .send({ status: false, message: 'pincode of billing cannot be empty' });
@@ -172,6 +172,7 @@ exports.register = async function(req, res) {
       data: userCreated
     });
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       status: false,
       message: 'Server Error',
@@ -182,7 +183,7 @@ exports.register = async function(req, res) {
 
 exports.getProfile = async function(req, res) {
   try {
-    let {userId} = req.params;
+    let { userId } = req.params;
 
     // if userId is not a valid ObjectId
     if (!isValidObjectId(userId)) {
@@ -207,6 +208,7 @@ exports.getProfile = async function(req, res) {
       data: userDoc
     });
   } catch (err) {
+    console.log(err);
     res.status(500).send({
       status: false,
       message: ' Server Error',
@@ -221,18 +223,18 @@ exports.userLogin = async function(req, res) {
     if (Object.keys(req.body).length === 0) {
       return res
         .status(400)
-        .send({ status: false, msg: 'All fields are mandatory.' });
+        .send({ status: false, message: 'All fields are mandatory.' });
     }
     // for validation
     if (!isValid(email)) {
       return res
         .status(400)
-        .send({ status: false, msg: 'Email must be present' });
+        .send({ status: false, message: 'Email must be present' });
     }
     if (!isValid(password)) {
       return res
         .status(400)
-        .send({ status: false, msg: 'Password must be present' });
+        .send({ status: false, message: 'Password must be present' });
     }
     if (!regexEmail.test(email))
       return res.status(400).send({
@@ -244,14 +246,15 @@ exports.userLogin = async function(req, res) {
     });
     // UsersData = UsersData.toObject();
     if (!UsersData)
-      return res.status(401).send({ status: false, msg: 'User Not found' });
+      return res.status(401).send({ status: false, message: 'User Not found' });
     const unmasked = await bcrypt.compare(password, UsersData.password);
-    // console.log(UsersData);
+    console.log(UsersData.fname);
     if (!UsersData || !unmasked) {
       return res
         .status(401)
-        .send({ status: false, msg: 'Enter a valid Email or Password' });
+        .send({ status: false, message: 'Enter a valid Email or Password' });
     }
+
     const token = jwt.sign(
       {
         userId: UsersData._id.toString(),
@@ -259,11 +262,12 @@ exports.userLogin = async function(req, res) {
       },
       'functionup-radon'
     );
+    console.log(token);
     res.setHeader('x-api-key', token);
     res.status(200).send({
       status: true,
       message: 'User Login Succesful',
-      data: { userId: UsersData._id, token: token }
+      data: { userId: UsersData._id, name: UsersData.fname, token: token }
     });
   } catch (err) {
     console.log(err);
@@ -282,17 +286,20 @@ exports.updatedUser = async function(req, res) {
         .send({ status: false, message: 'Body cannot be empty' });
     let { files } = req;
     let uploadedFileURL;
+    console.log(files.fieldname);
     if (files.length) {
+      console.log(files.fieldname);
       if (files[0].fieldname != 'profileImage')
         // upload only png and jpg format
-        return res
-          .status(400)
-          .send({ status: false, msg: 'Only images allowed as profileImage' });
+        return res.status(400).send({
+          status: false,
+          message: 'Only images allowed as profileImage'
+        });
       if (!files[0].originalname.match(/\.(png|jpg|gif|webp|jpeg)$/))
         // upload only png and jpg format
         return res
           .status(400)
-          .send({ status: false, msg: 'Only images allowed' });
+          .send({ status: false, message: 'Only images allowed' });
 
       //upload to s3 and get the uploaded link
       // res.send the link back to frontend/postman
